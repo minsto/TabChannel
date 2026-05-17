@@ -18,7 +18,15 @@ import net.minecraft.ChatFormatting;
 
 public final class ChannelCommands {
 
+    /** Niveau 0 = tous les joueurs (solo, LAN, Youer sans LuckPerms). */
+    private static final int COMMAND_PERMISSION_LEVEL = 0;
+
     private ChannelCommands() {
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> rootLiteral(String name) {
+        return Commands.literal(name)
+                .requires(source -> source.hasPermission(COMMAND_PERMISSION_LEVEL));
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -52,7 +60,7 @@ public final class ChannelCommands {
         );
     }
     private static LiteralArgumentBuilder<CommandSourceStack> createChannelRoot(String name) {
-        return Commands.literal(name)
+        return rootLiteral(name)
                 .then(Commands.literal("create")
                         .then(Commands.argument("name", StringArgumentType.string())
                                 .then(Commands.argument("type", StringArgumentType.word())
@@ -97,7 +105,7 @@ public final class ChannelCommands {
                                 .executes(ctx -> executeLeaveChannel(ctx.getSource(), StringArgumentType.getString(ctx, "channel")))));
     }
     private static LiteralArgumentBuilder<CommandSourceStack> createCreateChannel() {
-        return Commands.literal("channelcreate")
+        return rootLiteral("channelcreate")
                 .then(Commands.argument("name", StringArgumentType.string())
                         .then(Commands.argument("type", StringArgumentType.word())
                                 .executes(ctx -> executeCreateChannel(
@@ -235,7 +243,7 @@ public final class ChannelCommands {
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> createJoinChannel() {
-        return Commands.literal("channeljoin")
+        return rootLiteral("channeljoin")
                 .then(Commands.argument("name", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             ServerPlayer player = ctx.getSource().getPlayerOrException();
@@ -293,7 +301,7 @@ public final class ChannelCommands {
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> createChannelList() {
-        return Commands.literal("channellist")
+        return rootLiteral("channellist")
                 .executes(ctx -> {
                     ServerPlayer player = ctx.getSource().getPlayerOrException();
 
@@ -356,7 +364,7 @@ public final class ChannelCommands {
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> createSetChannel() {
-        return Commands.literal("setchannel")
+        return rootLiteral("setchannel")
 
                 .then(Commands.literal("delete")
                         .then(Commands.argument("channel", StringArgumentType.greedyString())

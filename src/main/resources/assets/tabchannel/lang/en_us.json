@@ -91,6 +91,9 @@
   "tabchannel.error.not_member": "You are not a member of this channel.",
   "tabchannel.error.you_are_muted": "You are muted in this channel.",
   "tabchannel.error.mention_cooldown": "Please wait %s second(s) before mentioning again.",
+  "tabchannel.error.channel_not_found": "Channel not found.",
+  "tabchannel.error.you_are_banned": "You are banned from this channel.",
+  "tabchannel.error.private_channel_access": "You do not have access to this private channel.",
   "key.tabchannel.open_gui": "Open Channel GUI",
   "key.categories.tabchannel": "TabChannel"
 }

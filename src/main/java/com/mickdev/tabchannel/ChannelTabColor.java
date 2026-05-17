@@ -91,25 +91,25 @@ public enum ChannelTabColor {
     ASH(0xFFB2BEB5, false),
 
     OBSIDIAN(0xFF0B0B0B, false),
-    VOID(0xFF111111, true),
+    VOID(0xFF111111, false),
     NIGHT(0xFF0C1445, false),
 
-    ELECTRIC_BLUE(0xFF7DF9FF, true),
-    LASER_GREEN(0xFFCCFF00, true),
-    TOXIC_GREEN(0xFF66FF00, true),
-    RADIOACTIVE(0xFF7FFF00, true),
+    ELECTRIC_BLUE(0xFF7DF9FF, false),
+    LASER_GREEN(0xFFCCFF00, false),
+    TOXIC_GREEN(0xFF66FF00, false),
+    RADIOACTIVE(0xFF7FFF00, false),
 
-    GALAXY_PURPLE(0xFF6A0DAD, true),
-    COSMIC_PINK(0xFFFF44CC, true),
-    MANA_BLUE(0xFF3366FF, true),
-    ENDER_PURPLE(0xFF4B006E, true),
+    GALAXY_PURPLE(0xFF6A0DAD, false),
+    COSMIC_PINK(0xFFFF44CC, false),
+    MANA_BLUE(0xFF3366FF, false),
+    ENDER_PURPLE(0xFF4B006E, false),
 
-    DIAMOND(0xFFB9F2FF, true),
-    RUBY_RED(0xFF9B111E, true),
-    SAPPHIRE(0xFF0F52BA, true),
-    TOPAZ(0xFFFFC857, true),
-    AMETHYST(0xFF9966CC, true),
-    EMERALD_GREEN(0xFF50C878, true);
+    DIAMOND(0xFFB9F2FF, false),
+    RUBY_RED(0xFF9B111E, false),
+    SAPPHIRE(0xFF0F52BA, false),
+    TOPAZ(0xFFFFC857, false),
+    AMETHYST(0xFF9966CC, false),
+    EMERALD_GREEN(0xFF50C878, false);
 
     private final int color;
     private final boolean adminOnly;

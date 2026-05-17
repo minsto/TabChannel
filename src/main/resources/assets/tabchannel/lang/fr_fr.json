@@ -91,6 +91,9 @@
   "tabchannel.error.not_member": "Tu n'es pas membre de ce canal.",
   "tabchannel.error.you_are_muted": "Tu es mute dans ce canal.",
   "tabchannel.error.mention_cooldown": "Merci d'attendre %s seconde(s) avant de refaire une mention.",
+  "tabchannel.error.channel_not_found": "Canal introuvable.",
+  "tabchannel.error.you_are_banned": "Tu es banni de ce canal.",
+  "tabchannel.error.private_channel_access": "Tu n'as pas accès à ce canal privé.",
   "key.tabchannel.open_gui": "Ouvrir le GUI des canaux",
   "key.categories.tabchannel": "TabChannel",
 

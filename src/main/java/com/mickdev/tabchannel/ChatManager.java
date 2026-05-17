@@ -81,16 +81,28 @@ public final class ChatManager {
 
     public static void joinChannel(ChatChannel channel, ServerPlayer player, boolean bypass) {
         if (channel == null) {
-            throw new IllegalStateException("Canal introuvable.");
+            throw new IllegalStateException(
+                    Component.translatable("tabchannel.error.channel_not_found")
+                            .getString()
+            );
         }
 
         if (channel.isBanned(player.getUUID()) && !bypass) {
-            throw new IllegalStateException("Tu es banni de ce canal.");
+            throw new IllegalStateException(
+                    Component.translatable("tabchannel.error.you_are_banned")
+                            .getString()
+            );
         }
 
-        if ((channel.getVisibility() == ChannelVisibility.PRIVATE || channel.getVisibility() == ChannelVisibility.FACTION)
-                && !channel.isMember(player.getUUID()) && !bypass) {
-            throw new IllegalStateException("Tu n'as pas accès à ce canal privé.");
+        if ((channel.getVisibility() == ChannelVisibility.PRIVATE
+                || channel.getVisibility() == ChannelVisibility.FACTION)
+                && !channel.isMember(player.getUUID())
+                && !bypass) {
+
+            throw new IllegalStateException(
+                    Component.translatable("tabchannel.error.private_channel_access")
+                            .getString()
+            );
         }
 
         if (!channel.isMember(player.getUUID())) {

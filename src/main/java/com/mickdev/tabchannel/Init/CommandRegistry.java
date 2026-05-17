@@ -28,6 +28,7 @@ public final class CommandRegistry {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onServerStarting(ServerStartingEvent event) {
         MinecraftServer server = event.getServer();
+        HybridBukkitPermissions.registerDefaultsForAllPlayers();
         HybridCommandSupport.syncCommandsAfterRegistration(server);
     }
 }
