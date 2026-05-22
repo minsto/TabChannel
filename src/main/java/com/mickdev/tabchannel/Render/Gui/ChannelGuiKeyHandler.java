@@ -1,5 +1,6 @@
 package com.mickdev.tabchannel.Render.Gui;
 
+import com.mickdev.tabchannel.Render.Hud.MpHudInteraction;
 import com.mickdev.tabchannel.TabChannel;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
@@ -21,12 +22,20 @@ public final class ChannelGuiKeyHandler {
             "key.categories.tabchannel"
     );
 
+    private static final KeyMapping OPEN_MP_GUI = new KeyMapping(
+            "key.tabchannel.open_mp",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_P,
+            "key.categories.tabchannel"
+    );
+
     private ChannelGuiKeyHandler() {
     }
 
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(OPEN_CHANNEL_GUI);
+        event.register(OPEN_MP_GUI);
     }
 
     @SubscribeEvent
@@ -40,6 +49,10 @@ public final class ChannelGuiKeyHandler {
             if (mc.screen == null) {
                 ChannelClientGui.openMain();
             }
+        }
+
+        while (OPEN_MP_GUI.consumeClick()) {
+            MpHudInteraction.openMpGui(mc);
         }
     }
 }

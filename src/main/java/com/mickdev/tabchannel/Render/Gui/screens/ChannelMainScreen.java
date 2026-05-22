@@ -5,6 +5,7 @@ import com.mickdev.tabchannel.NetWork.CodecChanel.ChannelSelectTabPayload;
 import com.mickdev.tabchannel.NetWork.CodecChanel.ClientChannelTabState;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ClientChannelChatState;
 import com.mickdev.tabchannel.Render.Gui.ChannelUiTheme;
+import com.mickdev.tabchannel.Render.Hud.MpHudInteraction;
 import com.mickdev.tabchannel.Render.Gui.ClientChannelNotifications;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -55,6 +56,13 @@ public final class ChannelMainScreen extends Screen {
                         b -> minecraft.setScreen(new ChannelPermissionsScreen(this))
                 )
                 .bounds(bx, by + 34, 190, 24)
+                .build());
+
+        addRenderableWidget(Button.builder(
+                        Component.translatable("tabchannel.gui.button.private_messages"),
+                        b -> MpHudInteraction.openMpGui(minecraft)
+                )
+                .bounds(bx, by + 68, 190, 24)
                 .build());
 
         addRenderableWidget(Button.builder(

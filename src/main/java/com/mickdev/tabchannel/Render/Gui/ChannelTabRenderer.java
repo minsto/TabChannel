@@ -10,6 +10,7 @@ import com.mickdev.tabchannel.NetWork.CodecChanel.ChannelSelectTabPayload;
 import com.mickdev.tabchannel.NetWork.CodecChanel.ClientChannelTabState;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ClientChannelChatState;
 import com.mickdev.tabchannel.TabChannel;
+import com.mickdev.tabchannel.WindosConf.ChannelHudLayoutConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -30,14 +31,12 @@ public final class ChannelTabRenderer {
                     "textures/gui/chat_tab.png"
             );
 
-    private static final int START_X = 4;
-    private static final int START_Y = 14;
-
     private ChannelTabRenderer() {
     }
 
     private static List<ClientChannelTabState.TabEntry> visibleTabsForCurrentPage() {
         List<ClientChannelTabState.TabEntry> all = new ArrayList<>(ClientChannelTabState.getTabs());
+
         if (all.isEmpty()) {
             return Collections.emptyList();
         }
@@ -48,6 +47,7 @@ public final class ChannelTabRenderer {
         int safePage = Math.min(Math.max(0, page), maxPage);
         int start = safePage * pageSize;
         int end = Math.min(all.size(), start + pageSize);
+
         return all.subList(start, end);
     }
 
@@ -55,6 +55,7 @@ public final class ChannelTabRenderer {
         int pageSize = ChatManager.MAX_VISIBLE_TABS;
         int pageCount = Math.max(1, (allTabs.size() + pageSize - 1) / pageSize);
         int displayPage = Math.min(ClientChannelTabState.getPage() + 1, pageCount);
+
         return "< Page " + displayPage + " / " + pageCount + " >";
     }
 
@@ -64,8 +65,10 @@ public final class ChannelTabRenderer {
         }
 
         Minecraft mc = Minecraft.getInstance();
-        int x = START_X;
-        int y = START_Y;
+
+        int startX = ChannelHudLayoutConfig.chatX();
+        int x = startX;
+        int y = ChannelHudLayoutConfig.chatY() - 24;
 
         List<ClientChannelTabState.TabEntry> visible = visibleTabsForCurrentPage();
 
@@ -74,10 +77,14 @@ public final class ChannelTabRenderer {
 
             guiGraphics.blit(
                     TAB_TEXTURE,
-                    x, y,
-                    0, 0,
-                    width, ChannelTabLayout.TAB_HEIGHT,
-                    width, ChannelTabLayout.TAB_HEIGHT
+                    x,
+                    y,
+                    0,
+                    0,
+                    width,
+                    ChannelTabLayout.TAB_HEIGHT,
+                    width,
+                    ChannelTabLayout.TAB_HEIGHT
             );
 
             int textWidth = mc.font.width(tab.displayName());
@@ -91,6 +98,7 @@ public final class ChannelTabRenderer {
             if (unread > 0) {
                 String badge = String.valueOf(Math.min(99, unread));
                 int bx = x + width - 14;
+
                 guiGraphics.fill(bx, y + 2, bx + 12, y + 12, 0xCCFF4444);
                 guiGraphics.drawString(mc.font, badge, bx + 3, y + 3, 0xFFFFFF, false);
             }
@@ -100,10 +108,11 @@ public final class ChannelTabRenderer {
 
         List<ClientChannelTabState.TabEntry> all = ClientChannelTabState.getTabs();
         String pageText = pageIndicatorText(all);
+
         guiGraphics.drawString(
                 mc.font,
                 Component.literal(pageText),
-                START_X,
+                startX,
                 y - 12,
                 0xFFFFFF,
                 false
@@ -117,14 +126,18 @@ public final class ChannelTabRenderer {
 
         Minecraft mc = Minecraft.getInstance();
 
-        int x = START_X;
-        int y = START_Y;
+        int startX = ChannelHudLayoutConfig.chatX();
+        int x = startX;
+        int y = ChannelHudLayoutConfig.chatY() - 24;
 
         for (ClientChannelTabState.TabEntry tab : visibleTabsForCurrentPage()) {
             int width = ChannelTabLayout.computeWidth(tab.displayName());
 
-            if (mouseX >= x && mouseX <= x + width
-                    && mouseY >= y && mouseY <= y + ChannelTabLayout.TAB_HEIGHT) {
+            if (mouseX >= x
+                    && mouseX <= x + width
+                    && mouseY >= y
+                    && mouseY <= y + ChannelTabLayout.TAB_HEIGHT) {
+
                 ClientChannelChatState.resetScroll(tab.id());
                 ClientChannelNotifications.clearUnread(tab.id());
                 PacketDistributor.sendToServer(new ChannelSelectTabPayload(tab.id()));
@@ -137,12 +150,14 @@ public final class ChannelTabRenderer {
         int pageY = y - 12;
         int charWidth = mc.font.width(">");
 
-        // zone du <
-        int leftArrowX1 = START_X;
-        int leftArrowX2 = START_X + charWidth + 4;
+        int leftArrowX1 = startX;
+        int leftArrowX2 = startX + charWidth + 4;
 
-        if (mouseX >= leftArrowX1 && mouseX <= leftArrowX2
-                && mouseY >= pageY && mouseY <= pageY + 10) {
+        if (mouseX >= leftArrowX1
+                && mouseX <= leftArrowX2
+                && mouseY >= pageY
+                && mouseY <= pageY + 10) {
+
             PacketDistributor.sendToServer(new ChannelChangePagePayload(false));
             return true;
         }
@@ -150,12 +165,14 @@ public final class ChannelTabRenderer {
         String pageText = pageIndicatorText(ClientChannelTabState.getTabs());
         int pageTextWidth = mc.font.width(pageText);
 
-        // zone du >
-        int rightArrowX2 = START_X + pageTextWidth;
+        int rightArrowX2 = startX + pageTextWidth;
         int rightArrowX1 = rightArrowX2 - charWidth - 4;
 
-        if (mouseX >= rightArrowX1 && mouseX <= rightArrowX2
-                && mouseY >= pageY && mouseY <= pageY + 10) {
+        if (mouseX >= rightArrowX1
+                && mouseX <= rightArrowX2
+                && mouseY >= pageY
+                && mouseY <= pageY + 10) {
+
             PacketDistributor.sendToServer(new ChannelChangePagePayload(true));
             return true;
         }

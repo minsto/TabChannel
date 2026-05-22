@@ -5,8 +5,12 @@ package com.mickdev.tabchannel.NetWork;
 
 import com.mickdev.tabchannel.NetWork.CodecChanel.*;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ChannelClearMessagesPayload;
+import com.mickdev.tabchannel.NetWork.CodecChanel.MpServerPayloadHandler;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ChannelMentionNotifyPayload;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ChannelMessagePayload;
+import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.MpBrowseModePayload;
+import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.MpMessagePayload;
+import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.MpSendPayload;
 import com.mickdev.tabchannel.TabChannel;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -60,6 +64,14 @@ public final class ModPayloads {
                 ChannelMentionNotifyPayload.STREAM_CODEC,
                 ChannelClientPayloadHandler::handleMentionNotify);
 
+        registrar.playToClient(MpMessagePayload.TYPE,
+                MpMessagePayload.STREAM_CODEC,
+                ChannelClientPayloadHandler::handleMpMessage);
+
+        registrar.playToClient(MpBrowseModePayload.TYPE,
+                MpBrowseModePayload.STREAM_CODEC,
+                ChannelClientPayloadHandler::handleMpBrowseMode);
+
         registrar.playToServer(ChannelSelectTabPayload.TYPE,
                 ChannelSelectTabPayload.STREAM_CODEC,
                 ChannelServerPayloadHandler::handleSelectTab);
@@ -71,6 +83,10 @@ public final class ModPayloads {
         registrar.playToServer(ChannelSendMessagePayload.TYPE,
                 ChannelSendMessagePayload.STREAM_CODEC,
                 ChannelServerPayloadHandler::handleSendMessage);
+
+        registrar.playToServer(MpSendPayload.TYPE,
+                MpSendPayload.STREAM_CODEC,
+                MpServerPayloadHandler::handleSend);
 
 
 

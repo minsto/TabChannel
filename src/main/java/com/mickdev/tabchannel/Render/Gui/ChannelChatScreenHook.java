@@ -3,7 +3,10 @@ package com.mickdev.tabchannel.Render.Gui;
 
 import com.mickdev.tabchannel.NetWork.CodecChanel.ClientChannelTabState;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ClientChannelChatState;
+import com.mickdev.tabchannel.Render.Hud.MpButtonRenderer;
+import com.mickdev.tabchannel.Render.Hud.MpHudInteraction;
 import com.mickdev.tabchannel.TabChannel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -32,13 +35,35 @@ public final class ChannelChatScreenHook {
                     event.getMouseX(),
                     event.getMouseY()
             );
+
+            Minecraft mc = Minecraft.getInstance();
+            MpButtonRenderer.renderOnChat(event.getGuiGraphics(), mc, event.getMouseX(), event.getMouseY());
         }
     }
 
     @SubscribeEvent
     public static void click(ScreenEvent.MouseButtonPressed.Pre event) {
-        if (event.getScreen() instanceof ChatScreen
-                && ChannelTabRenderer.mouseClicked(
+        if (!(event.getScreen() instanceof ChatScreen)) {
+            return;
+        }
+
+        Minecraft mc = Minecraft.getInstance();
+        if (MpHudInteraction.handlePopoutClick(event.getMouseX(), event.getMouseY(), event.getButton(), mc)) {
+            event.setCanceled(true);
+            return;
+        }
+
+        if (ChannelMessageRenderer.mouseClicked(
+                event.getScreen(),
+                event.getMouseX(),
+                event.getMouseY(),
+                event.getButton()
+        )) {
+            event.setCanceled(true);
+            return;
+        }
+
+        if (ChannelTabRenderer.mouseClicked(
                 event.getScreen(),
                 event.getMouseX(),
                 event.getMouseY(),

@@ -2,6 +2,8 @@ package com.mickdev.tabchannel;
 
 import com.mickdev.tabchannel.Api.Compact.CompatServices;
 import com.mickdev.tabchannel.Api.Compact.EmojifulCompat;
+import com.mickdev.tabchannel.Common.ChatLogStorage;
+import com.mickdev.tabchannel.Common.Mp.MpOfflineMailbox;
 import com.mickdev.tabchannel.mention.ChannelMentionService;
 
 import net.minecraft.ChatFormatting;
@@ -52,6 +54,7 @@ public final class ChannelSyncEvents {
 		}
 
 		if ("global".equalsIgnoreCase(channelId)) {
+
 			MutableComponent full = buildChatLine(player, raw);
 			event.setCanceled(true);
 
@@ -60,11 +63,14 @@ public final class ChannelSyncEvents {
 			}
 
 			ChannelMentionService.processMessage(player, "global", raw, full);
+			ChatLogStorage.log(player.server, player, "global", raw);
 			return;
 		}
 
 		event.setCanceled(true);
-		ChannelChatService.handleChannelMessage(player, channelId, raw);
+		if (ChannelChatService.handleChannelMessage(player, channelId, raw)) {
+			ChatLogStorage.log(player.server, player, channelId, raw);
+		}
 	}
 
 	private static MutableComponent buildChatLine(ServerPlayer player, String rawText) {

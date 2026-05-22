@@ -2,18 +2,25 @@ package com.mickdev.tabchannel.Commandes;
 
 
 import com.mickdev.tabchannel.*;
-import com.mickdev.tabchannel.Api.Compact.CompatServices;
+        import com.mickdev.tabchannel.Api.Compact.CompatServices;
+import com.mickdev.tabchannel.Common.Mp.PrivateMessageService;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
+        import com.mojang.brigadier.arguments.StringArgumentType;
+        import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+        import com.mojang.brigadier.exceptions.CommandSyntaxException;
+        import net.minecraft.commands.CommandSourceStack;
+        import net.minecraft.commands.Commands;
+        import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.ChatFormatting;
+        import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 
 
 public final class ChannelCommands {
@@ -40,6 +47,96 @@ public final class ChannelCommands {
         dispatcher.register(createJoinChannel());
         dispatcher.register(createChannelList());
         dispatcher.register(createSetChannel());
+        dispatcher.register(Commands.literal("mp")
+                .then(Commands.literal("block")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    PrivateMessageService.block(
+                                            ctx.getSource().getPlayerOrException(),
+                                            EntityArgument.getPlayer(ctx, "player")
+                                    );
+                                    return 1;
+                                })))
+                .then(Commands.literal("unblock")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    PrivateMessageService.unblock(
+                                            ctx.getSource().getPlayerOrException(),
+                                            EntityArgument.getPlayer(ctx, "player")
+                                    );
+                                    return 1;
+                                })))
+                .then(Commands.literal("socialspy")
+                        .executes(ctx -> {
+                            PrivateMessageService.toggleSocialSpy(
+                                    ctx.getSource().getPlayerOrException()
+                            );
+                            return 1;
+                        }))
+                .then(Commands.argument("player", EntityArgument.player())
+                        .then(Commands.argument("message", StringArgumentType.greedyString())
+                                .executes(ctx -> {
+                                    PrivateMessageService.send(
+                                            ctx.getSource().getPlayerOrException(),
+                                            EntityArgument.getPlayer(ctx, "player"),
+                                            StringArgumentType.getString(ctx, "message")
+                                    );
+                                    return 1;
+                                }))));
+
+        dispatcher.register(Commands.literal("r")
+                .then(Commands.argument("message", StringArgumentType.greedyString())
+                        .executes(ctx -> {
+                            PrivateMessageService.reply(
+                                    ctx.getSource().getPlayerOrException(),
+                                    StringArgumentType.getString(ctx, "message")
+                            );
+                            return 1;
+                        })));
+        dispatcher.register(Commands.literal("tabchanneltploc")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.argument("dimension", StringArgumentType.string())
+                        .then(Commands.argument("x", DoubleArgumentType.doubleArg())
+                                .then(Commands.argument("y", DoubleArgumentType.doubleArg())
+                                        .then(Commands.argument("z", DoubleArgumentType.doubleArg())
+                                                .executes(ctx -> {
+                                                    String dimension = StringArgumentType.getString(ctx, "dimension");
+
+                                                    if (!dimension.contains(":")) {
+                                                        dimension = "minecraft:" + dimension;
+                                                    }
+
+                                                    ResourceKey<Level> key = ResourceKey.create(
+                                                            Registries.DIMENSION,
+                                                            ResourceLocation.parse(dimension)
+                                                    );
+
+                                                    ServerLevel level = ctx.getSource().getServer().getLevel(key);
+
+                                                    if (level == null) {
+                                                        ctx.getSource().sendFailure(
+                                                                Component.literal("Dimension not found: " + dimension)
+                                                        );
+                                                        return 0;
+                                                    }
+
+                                                    double x = DoubleArgumentType.getDouble(ctx, "x");
+                                                    double y = DoubleArgumentType.getDouble(ctx, "y");
+                                                    double z = DoubleArgumentType.getDouble(ctx, "z");
+
+                                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+
+                                                    player.teleportTo(
+                                                            level,
+                                                            x,
+                                                            y,
+                                                            z,
+                                                            player.getYRot(),
+                                                            player.getXRot()
+                                                    );
+
+                                                    return 1;
+                                                }))))));
     }
 
     private static Component msg(String key, ChatFormatting color, Object... args) {
@@ -358,6 +455,7 @@ public final class ChannelCommands {
             case "rules", "rule" -> ChannelPermissions.RULES;
             case "warn", "filter", "antiswear" -> ChannelPermissions.WARN;
             case "invite", "inv" -> ChannelPermissions.INVITE;
+            case "tabcolors", "TabColors" -> ChannelPermissions.TabColors;
             case "f", "faction" -> ChannelPermissions.FACTION;
             default -> raw;
         };
@@ -513,40 +611,28 @@ public final class ChannelCommands {
                                                                 })))))))
 
                 .then(Commands.literal("perm")
-                        .then(Commands.argument("channel", StringArgumentType.string())
-                                .then(Commands.argument("player", EntityArgument.player())
-                                        .then(Commands.argument("perm", StringArgumentType.greedyString())
-                                                .executes(ctx -> {
-                                                    ServerPlayer source = ctx.getSource().getPlayerOrException();
-                                                    String channelId = ChatManager.sanitizeId(StringArgumentType.getString(ctx, "channel"));
-                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
-                                                    String perm = normalizeChannelPermissionInput(StringArgumentType.getString(ctx, "perm"));
-                                                    ChatChannel channel = ChatManager.getChannel(channelId);
-
-                                                    if (channel == null) {
-                                                        ctx.getSource().sendFailure(msg("tabchannel.error.channel_not_found", ChatFormatting.RED));
-                                                        return 0;
-                                                    }
-
-                                                    if (!canManageChannel(source, channel, ChannelPermissions.PERM)) {
-                                                        ctx.getSource().sendFailure(msg("tabchannel.error.cannot_grant_permissions", ChatFormatting.RED));
-                                                        return 0;
-                                                    }
-
-                                                    if (!channel.isMember(target.getUUID())) {
-                                                        channel.addMember(target.getUUID(), ChannelRole.MEMBER);
-                                                    }
-
-                                                    channel.getMember(target.getUUID()).grant(perm);
-                                                    ChannelSavedData.get(source.serverLevel()).setDirty();
-                                                    ChannelSyncService.syncPlayer(target);
-
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> msg("tabchannel.success.permission_given", ChatFormatting.GREEN, perm),
-                                                            false
-                                                    );
-                                                    return 1;
-                                                })))))
+                        .then(Commands.literal("add")
+                                .then(Commands.argument("channel", StringArgumentType.string())
+                                        .then(Commands.argument("player", EntityArgument.player())
+                                                .then(Commands.argument("perm", StringArgumentType.greedyString())
+                                                        .executes(ctx -> executeChannelPerm(
+                                                                ctx.getSource(),
+                                                                StringArgumentType.getString(ctx, "channel"),
+                                                                EntityArgument.getPlayer(ctx, "player"),
+                                                                StringArgumentType.getString(ctx, "perm"),
+                                                                true
+                                                        ))))))
+                        .then(Commands.literal("remove")
+                                .then(Commands.argument("channel", StringArgumentType.string())
+                                        .then(Commands.argument("player", EntityArgument.player())
+                                                .then(Commands.argument("perm", StringArgumentType.greedyString())
+                                                        .executes(ctx -> executeChannelPerm(
+                                                                ctx.getSource(),
+                                                                StringArgumentType.getString(ctx, "channel"),
+                                                                EntityArgument.getPlayer(ctx, "player"),
+                                                                StringArgumentType.getString(ctx, "perm"),
+                                                                false
+                                                        )))))))
 
                 .then(Commands.literal("rules")
                         .then(Commands.argument("channel", StringArgumentType.string())
@@ -854,6 +940,60 @@ public final class ChannelCommands {
                     msg("tabchannel.list.empty", ChatFormatting.GRAY)
             );
         }
+
+        return 1;
+    }private static int executeChannelPerm(
+            CommandSourceStack source,
+            String rawChannel,
+            ServerPlayer target,
+            String rawPerm,
+            boolean add
+    ) throws CommandSyntaxException {
+
+        ServerPlayer player = source.getPlayerOrException();
+
+        String channelId = ChatManager.sanitizeId(rawChannel);
+        String perm = normalizeChannelPermissionInput(rawPerm);
+
+        ChatChannel channel = ChatManager.getChannel(channelId);
+
+        if (channel == null) {
+            source.sendFailure(msg("tabchannel.error.channel_not_found", ChatFormatting.RED));
+            return 0;
+        }
+
+        if (!canManageChannel(player, channel, ChannelPermissions.PERM)) {
+            source.sendFailure(msg("tabchannel.error.cannot_grant_permissions", ChatFormatting.RED));
+            return 0;
+        }
+
+        if (!channel.isMember(target.getUUID())) {
+            channel.addMember(target.getUUID(), ChannelRole.MEMBER);
+        }
+
+        ChannelMemberData member = channel.getMember(target.getUUID());
+
+        if (member == null) {
+            source.sendFailure(Component.literal("Member data not found.").withStyle(ChatFormatting.RED));
+            return 0;
+        }
+
+        if (add) {
+            member.grant(perm);
+            source.sendSuccess(
+                    () -> Component.literal("Permission added: " + perm).withStyle(ChatFormatting.GREEN),
+                    false
+            );
+        } else {
+            member.revoke(perm);
+            source.sendSuccess(
+                    () -> Component.literal("Permission removed: " + perm).withStyle(ChatFormatting.YELLOW),
+                    false
+            );
+        }
+
+        ChannelSavedData.get(player.serverLevel()).setDirty();
+        ChannelSyncService.syncPlayer(target);
 
         return 1;
     }

@@ -6,17 +6,16 @@ public final class CompatServices {
 
     public static final PermissionCompat PERMISSIONS = createPermissionCompat();
     public static final FactionCompat FACTIONS = createFactionCompat();
+    public static final DiscordCompat DISCORD = createDiscordCompat();
 
     private CompatServices() {
     }
 
     private static PermissionCompat createPermissionCompat() {
-        // LuckPerms MOD NeoForge/Forge
         if (ModList.get().isLoaded("luckperms")) {
             return new LuckPermsCompat();
         }
 
-        // Plugins Bukkit/Mohist
         if (BukkitDetector.isBukkitPresent()) {
             if (BukkitDetector.hasPlugin("LuckPerms")) {
                 return new BukkitLuckPermsCompat();
@@ -30,19 +29,28 @@ public final class CompatServices {
         return new NoPermissionCompat();
     }
 
+    private static DiscordCompat createDiscordCompat() {
+        if (BukkitDetector.isBukkitPresent()
+                && BukkitDetector.hasPlugin("DiscordSRV")) {
+            return new BukkitDiscordSrvCompat();
+        }
+
+        return new NoDiscordCompat();
+    }
+
     private static FactionCompat createFactionCompat() {
-        // Mods factions NeoForge
         if (ModList.get().isLoaded("odyssey_factions_rise")) {
             return new OdysseyFactionCompat();
         }
+
         if (ModList.get().isLoaded("soleaapi")) {
             return new SoleaFactionCompat();
         }
+
         if (ModList.get().isLoaded("factionwar")) {
             return new FactionWarCompat();
         }
 
-        // Plugins factions Bukkit/Mohist
         if (BukkitDetector.isBukkitPresent()) {
             if (BukkitDetector.hasPlugin("Factions")
                     || BukkitDetector.hasPlugin("SaberFactions")

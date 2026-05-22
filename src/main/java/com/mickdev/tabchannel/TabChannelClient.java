@@ -6,7 +6,17 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import com.mickdev.tabchannel.Common.Mp.ClientMpAccess;
+import com.mickdev.tabchannel.Common.Mp.ClientMpPersistence;
+import com.mickdev.tabchannel.NetWork.CodecChanel.ClientChannelTabState;
+import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ClientChannelChatState;
+import com.mickdev.tabchannel.WindosConf.ChannelHudLayoutConfig;
+import com.mickdev.tabchannel.stream.StreamChatManager;
+import com.mickdev.tabchannel.stream.config.StreamChatConfig;
+import com.mickdev.tabchannel.stream.config.StreamOverlayLayoutConfig;
+
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
@@ -24,8 +34,29 @@ public class TabChannelClient {
 
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
-        // Some client setup code
+        event.enqueueWork(() -> {
+            ChannelHudLayoutConfig.bootstrap();
+            StreamChatConfig.bootstrap();
+            StreamOverlayLayoutConfig.bootstrap();
+            StreamChatManager.bootstrap();
+        });
         TabChannel.LOGGER.info("TabChannel Runs");
         TabChannel.LOGGER.info("TabChannel NAME >> {}", Minecraft.getInstance().getUser().getName());
+    }
+
+    @SubscribeEvent
+    static void onPlayerJoinWorld(ClientPlayerNetworkEvent.LoggingIn event) {
+        ChannelHudLayoutConfig.ensureDefaultPosition();
+        ClientMpPersistence.loadForCurrentServer();
+        StreamChatManager.bootstrap();
+    }
+
+    @SubscribeEvent
+    static void onPlayerLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+        ClientChannelTabState.resetForNewWorld();
+        ClientChannelChatState.clearAll();
+        ClientMpPersistence.resetServerContext();
+        ClientMpAccess.reset();
+        StreamChatManager.shutdown();
     }
 }

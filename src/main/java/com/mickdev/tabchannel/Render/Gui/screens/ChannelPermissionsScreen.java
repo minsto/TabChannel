@@ -53,7 +53,6 @@ public final class ChannelPermissionsScreen extends Screen {
         addPermissionButton("Kick", "kick", bx + (bw + gap), by, bw, bh);
         addPermissionButton("Ban", "ban", bx + (bw + gap) * 2, by, bw, bh);
         addPermissionButton("Mute", "mute", bx + (bw + gap) * 3, by, bw, bh);
-
         addPermissionButton("Rules", "rules", bx, by + 26, bw, bh);
         addPermissionButton("Delete", "delete", bx + (bw + gap), by + 26, bw, bh);
         addPermissionButton("Manage", "manage", bx + (bw + gap) * 2, by + 26, bw, bh);
@@ -138,10 +137,30 @@ public final class ChannelPermissionsScreen extends Screen {
                 ChannelUiTheme.GREEN,
                 false
         );
-
+        addRenderableWidget(Button.builder(
+                        Component.literal("Remove Permission"),
+                        b -> removePermission()
+                )
+                .bounds(panelX + 24, panelY + 210, 150, 20)
+                .build());
         super.render(g, mouseX, mouseY, partialTick);
     }
+    private void removePermission() {
+        String player = playerBox.getValue().trim();
+        String channel = selectedChannel();
 
+        if (player.isBlank() || selectedPermission.isBlank() || channel.isBlank()) {
+            return;
+        }
+
+        if (minecraft != null && minecraft.player != null) {
+            minecraft.player.connection.sendCommand(
+                    "setchannel perm remove " + channel + " " + player + " " + selectedPermission
+            );
+        }
+
+        minecraft.setScreen(parent);
+    }
     private void renderPanel(GuiGraphics g) {
         g.fill(panelX, panelY, panelX + panelW, panelY + panelH, 0xD8071018);
 
@@ -163,7 +182,7 @@ public final class ChannelPermissionsScreen extends Screen {
 
         if (minecraft != null && minecraft.player != null) {
             minecraft.player.connection.sendCommand(
-                    "setchannel perm " + channel + " " + player + " " + selectedPermission
+                    "setchannel perm add " + channel + " " + player + " " + selectedPermission
             );
         }
 

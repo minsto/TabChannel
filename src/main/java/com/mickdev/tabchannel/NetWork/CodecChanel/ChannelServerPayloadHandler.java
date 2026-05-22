@@ -2,6 +2,7 @@ package com.mickdev.tabchannel.NetWork.CodecChanel;
 
 
 import com.mickdev.tabchannel.*;
+import com.mickdev.tabchannel.Common.ChatLogStorage;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ChannelNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -114,16 +115,35 @@ public final class ChannelServerPayloadHandler {
             String channelId = payload.channelId();
             String message = payload.message();
 
+            if (channelId == null || channelId.isBlank()) {
+                channelId = "global";
+            }
+
             if (message == null) {
                 return;
             }
 
             message = message.trim();
+
             if (message.isEmpty()) {
                 return;
             }
 
-            ChannelChatService.handleChannelMessage(player, channelId, message);
+            boolean sent = ChannelChatService.handleChannelMessage(player, channelId, message);
+
+            if (sent) {
+                ChatLogStorage.log(
+                        player.server,
+                        player,
+                        channelId,
+                        message
+                );
+
+
+                System.out.println("TABCHANNEL LOGGED: [" + channelId + "] "
+                        + player.getGameProfile().getName()
+                        + ": " + message);
+            }
         });
     }
 }

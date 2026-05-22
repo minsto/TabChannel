@@ -2,6 +2,8 @@ package com.mickdev.tabchannel;
 
 
 import com.mickdev.tabchannel.Api.Compact.CompatServices;
+import com.mickdev.tabchannel.Common.ChatColors.ChatStyleFormatter;
+import com.mickdev.tabchannel.Common.ChatLogStorage;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ChannelNetworking;
 import com.mickdev.tabchannel.mention.ChannelMentionAntiSpam;
 import com.mickdev.tabchannel.mention.ChannelMentionService;
@@ -35,6 +37,7 @@ public final class ChannelChatService {
         }
 
         if ("global".equalsIgnoreCase(channelId)) {
+
             return false;
         }
 
@@ -109,7 +112,8 @@ public final class ChannelChatService {
             full.append(Component.literal(" §7[faction " + factionName + "]"));
         }
 
-        full.append(Component.literal("§f: " + rawText));
+        full.append(Component.literal("§f: ").withStyle(ChatFormatting.GRAY));
+        full.append(ChatStyleFormatter.format(sender, rawText));
 
         ChatManager.push(channelId, full);
 
@@ -128,7 +132,11 @@ public final class ChannelChatService {
         }
 
         ChannelMentionService.processMessage(sender, channelId, rawText, full);
-
+        CompatServices.DISCORD.sendToDiscord(
+                channelId,
+                sender.getGameProfile().getName(),
+                rawText
+        );
         return true;
     }
 

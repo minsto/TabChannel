@@ -26,9 +26,12 @@ public final class ClientChannelTabState {
 
     public static void clear() {
         TABS.clear();
-        // IMPORTANT:
-        // ne pas reset selectedChannelId ici
-        // sinon les messages repartent dans global
+    }
+
+    public static void resetForNewWorld() {
+        TABS.clear();
+        page = 0;
+        selectedChannelId = "global";
     }
 
     public static void addTab(

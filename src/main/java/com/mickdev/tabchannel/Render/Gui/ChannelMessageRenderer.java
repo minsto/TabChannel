@@ -10,7 +10,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import com.mickdev.tabchannel.WindosConf.ChannelHudLayoutConfig;
+import net.minecraft.network.chat.Style;
 
 import java.util.List;
 
@@ -30,9 +33,74 @@ public final class ChannelMessageRenderer {
     }
 
     public static int getVisibleLineCount(Screen screen) {
-        return Math.max(1, CHAT_HEIGHT / LINE_HEIGHT);
-    }
 
+        return Math.max(1, ChannelHudLayoutConfig.chatHeight() / LINE_HEIGHT);
+    }
+    public static boolean mouseClicked(Screen screen, double mouseX, double mouseY, int button) {
+        if (!(screen instanceof ChatScreen)) {
+            return false;
+        }
+
+        if (button != 0) {
+            return false;
+        }
+
+        String selectedChannelId = ClientChannelTabState.getSelectedChannelId();
+        if (selectedChannelId == null || selectedChannelId.isBlank() || "global".equalsIgnoreCase(selectedChannelId)) {
+            return false;
+        }
+
+        Minecraft mc = Minecraft.getInstance();
+        List<Component> messages = ClientChannelChatState.getMessages(selectedChannelId);
+
+        int left = ChannelHudLayoutConfig.chatX();
+        int top = ChannelHudLayoutConfig.chatY();
+        int bottom = top + ChannelHudLayoutConfig.chatHeight();
+
+        int visibleLines = Math.max(1, ChannelHudLayoutConfig.chatHeight() / LINE_HEIGHT);
+        int scrollOffset = ClientChannelChatState.getScrollOffset(selectedChannelId);
+
+        int endExclusive = Math.max(0, messages.size() - scrollOffset);
+        int startInclusive = Math.max(0, endExclusive - visibleLines);
+
+        int y = bottom - LINE_HEIGHT - 2;
+
+        for (int i = endExclusive - 1; i >= startInclusive; i--) {
+            Component line = messages.get(i);
+
+            if (mouseY >= y && mouseY <= y + LINE_HEIGHT) {
+                int relativeX = (int) mouseX - left;
+
+                Style style = mc.font.getSplitter().componentStyleAtWidth(line, relativeX);
+
+                if (style != null && style.getClickEvent() != null) {
+                    ClickEvent click = style.getClickEvent();
+
+                    if (click.getAction() == ClickEvent.Action.RUN_COMMAND) {
+                        String command = click.getValue();
+
+                        if (command.startsWith("/")) {
+                            command = command.substring(1);
+                        }
+
+                        mc.player.connection.sendCommand(command);
+                        return true;
+                    }
+
+                    if (click.getAction() == ClickEvent.Action.SUGGEST_COMMAND) {
+                        if (mc.screen instanceof ChatScreen chatScreen) {
+                            // optionnel, on ignore pour l’instant
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            y -= LINE_HEIGHT;
+        }
+
+        return false;
+    }
     public static void render(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (!(screen instanceof ChatScreen)) {
             return;
@@ -46,12 +114,12 @@ public final class ChannelMessageRenderer {
         Minecraft mc = Minecraft.getInstance();
         List<Component> messages = ClientChannelChatState.getMessages(selectedChannelId);
 
-        int left = CHAT_X;
-        int bottom = screen.height - CHAT_BOTTOM_MARGIN;
-        int top = bottom - CHAT_HEIGHT;
-        int right = left + CHAT_WIDTH;
+        int left = ChannelHudLayoutConfig.chatX();
+        int top = ChannelHudLayoutConfig.chatY();
+        int right = left + ChannelHudLayoutConfig.chatWidth();
+        int bottom = top + ChannelHudLayoutConfig.chatHeight();
 
-        int visibleLines = Math.max(1, CHAT_HEIGHT / LINE_HEIGHT);
+        int visibleLines = Math.max(1, ChannelHudLayoutConfig.chatHeight() / LINE_HEIGHT);
         int scrollOffset = ClientChannelChatState.getScrollOffset(selectedChannelId);
 
         int endExclusive = Math.max(0, messages.size() - scrollOffset);

@@ -1,5 +1,6 @@
 package com.mickdev.tabchannel;
 
+import com.mickdev.tabchannel.Common.ChatColors.Events.ChatEventListener;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -55,7 +56,7 @@ public class TabChannel {
         // Note that this is necessary if and only if we want *this* class (TabChannel) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
-
+        NeoForge.EVENT_BUS.register(new ChatEventListener());
         // Register the item to a creative tab
 
 
