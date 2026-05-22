@@ -11,7 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public final class ChannelMentionService {
 
@@ -102,6 +102,6 @@ public final class ChannelMentionService {
 		if (!notified.add(target.getUUID())) {
 			return;
 		}
-		PacketDistributor.sendToPlayer(target, new ChannelMentionNotifyPayload(channelId, preview));
+		ServerPlayNetworking.send(target, new ChannelMentionNotifyPayload(channelId, preview));
 	}
 }

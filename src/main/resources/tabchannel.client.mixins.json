@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.mickdev.tabchannel.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ChatComponentMixin",
+    "ChatScreenAccessor",
+    "ChatScreenMixin",
+    "ChatScreenOutgoingMixin",
+    "GuiStreamOverlayMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

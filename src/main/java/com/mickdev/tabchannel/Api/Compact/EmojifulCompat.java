@@ -1,8 +1,6 @@
 package com.mickdev.tabchannel.Api.Compact;
 
-import net.neoforged.fml.ModList;
-
-import net.neoforged.fml.ModList;
+import net.fabricmc.loader.api.FabricLoader;
 
 public final class EmojifulCompat {
 
@@ -10,7 +8,7 @@ public final class EmojifulCompat {
     }
 
     public static boolean isLoaded() {
-        return ModList.get().isLoaded("emojiful");
+        return FabricLoader.getInstance().isModLoaded("emojiful");
     }
 
     public static String formatMessage(String text) {

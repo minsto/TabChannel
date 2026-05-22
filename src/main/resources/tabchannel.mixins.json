@@ -2,16 +2,10 @@
   "required": true,
   "package": "com.mickdev.tabchannel.mixin",
   "compatibilityLevel": "JAVA_21",
-
   "mixins": [
-    "ServerPlayerSystemMessageMixin"
-  ],
+    "ServerPlayerSystemMessageMixin",
 
-  "client": [
-    "ChatComponentMixin",
-    "ChatScreenAccessor"
   ],
-
   "injectors": {
     "defaultRequire": 1
   }

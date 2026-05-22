@@ -6,31 +6,27 @@ package com.mickdev.tabchannel.Render.Gui;
 
 import com.mickdev.tabchannel.NetWork.CodecChanel.ClientChannelTabState;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ClientChannelChatState;
+import com.mickdev.tabchannel.WindosConf.ChannelHudLayoutConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 
 import java.util.List;
 
 public final class ChannelMessageRenderer {
 
     private static final int LINE_HEIGHT = 9;
-
-    // Position proche du vrai chat vanilla
-    private static final int CHAT_X = 4;
-    private static final int CHAT_BOTTOM_MARGIN = 38;
-    private static final int CHAT_WIDTH = 320;
-    private static final int CHAT_HEIGHT = 180;
-
     private static final int SCROLLBAR_WIDTH = 6;
 
     private ChannelMessageRenderer() {
     }
 
     public static int getVisibleLineCount(Screen screen) {
-        return Math.max(1, CHAT_HEIGHT / LINE_HEIGHT);
+        return Math.max(1, ChannelHudLayoutConfig.chatHeight() / LINE_HEIGHT);
     }
 
     public static void render(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
@@ -39,25 +35,25 @@ public final class ChannelMessageRenderer {
         }
 
         String selectedChannelId = ClientChannelTabState.getSelectedChannelId();
-        if (selectedChannelId == null || selectedChannelId.isBlank() || "global".equals(selectedChannelId)) {
+
+        if (selectedChannelId == null || selectedChannelId.isBlank() || "global".equalsIgnoreCase(selectedChannelId)) {
             return;
         }
 
         Minecraft mc = Minecraft.getInstance();
         List<Component> messages = ClientChannelChatState.getMessages(selectedChannelId);
 
-        int left = CHAT_X;
-        int bottom = screen.height - CHAT_BOTTOM_MARGIN;
-        int top = bottom - CHAT_HEIGHT;
-        int right = left + CHAT_WIDTH;
+        int left = ChannelHudLayoutConfig.chatX();
+        int top = ChannelHudLayoutConfig.chatY();
+        int right = left + ChannelHudLayoutConfig.chatWidth();
+        int bottom = top + ChannelHudLayoutConfig.chatHeight();
 
-        int visibleLines = Math.max(1, CHAT_HEIGHT / LINE_HEIGHT);
+        int visibleLines = Math.max(1, ChannelHudLayoutConfig.chatHeight() / LINE_HEIGHT);
         int scrollOffset = ClientChannelChatState.getScrollOffset(selectedChannelId);
 
         int endExclusive = Math.max(0, messages.size() - scrollOffset);
         int startInclusive = Math.max(0, endExclusive - visibleLines);
 
-        // fond style vanilla
         guiGraphics.fill(
                 left - 2,
                 top - 2,
@@ -67,6 +63,7 @@ public final class ChannelMessageRenderer {
         );
 
         int y = bottom - LINE_HEIGHT - 2;
+
         for (int i = endExclusive - 1; i >= startInclusive; i--) {
             guiGraphics.drawString(
                     mc.font,
@@ -76,12 +73,77 @@ public final class ChannelMessageRenderer {
                     0xFFFFFF,
                     false
             );
+
             y -= LINE_HEIGHT;
         }
 
         renderScrollbar(guiGraphics, selectedChannelId, top, bottom, visibleLines, messages.size(), right);
     }
+    public static boolean mouseClicked(Screen screen, double mouseX, double mouseY, int button) {
+        if (!(screen instanceof ChatScreen)) {
+            return false;
+        }
 
+        if (button != 0) {
+            return false;
+        }
+
+        String selectedChannelId = ClientChannelTabState.getSelectedChannelId();
+        if (selectedChannelId == null || selectedChannelId.isBlank() || "global".equalsIgnoreCase(selectedChannelId)) {
+            return false;
+        }
+
+        Minecraft mc = Minecraft.getInstance();
+        List<Component> messages = ClientChannelChatState.getMessages(selectedChannelId);
+
+        int left = ChannelHudLayoutConfig.chatX();
+        int top = ChannelHudLayoutConfig.chatY();
+        int bottom = top + ChannelHudLayoutConfig.chatHeight();
+
+        int visibleLines = Math.max(1, ChannelHudLayoutConfig.chatHeight() / LINE_HEIGHT);
+        int scrollOffset = ClientChannelChatState.getScrollOffset(selectedChannelId);
+
+        int endExclusive = Math.max(0, messages.size() - scrollOffset);
+        int startInclusive = Math.max(0, endExclusive - visibleLines);
+
+        int y = bottom - LINE_HEIGHT - 2;
+
+        for (int i = endExclusive - 1; i >= startInclusive; i--) {
+            Component line = messages.get(i);
+
+            if (mouseY >= y && mouseY <= y + LINE_HEIGHT) {
+                int relativeX = (int) mouseX - left;
+
+                Style style = mc.font.getSplitter().componentStyleAtWidth(line, relativeX);
+
+                if (style != null && style.getClickEvent() != null) {
+                    ClickEvent click = style.getClickEvent();
+
+                    if (click.getAction() == ClickEvent.Action.RUN_COMMAND) {
+                        String command = click.getValue();
+
+                        if (command.startsWith("/")) {
+                            command = command.substring(1);
+                        }
+
+                        mc.player.connection.sendCommand(command);
+                        return true;
+                    }
+
+                    if (click.getAction() == ClickEvent.Action.SUGGEST_COMMAND) {
+                        if (mc.screen instanceof ChatScreen chatScreen) {
+                            // optionnel, on ignore pour l’instant
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            y -= LINE_HEIGHT;
+        }
+
+        return false;
+    }
     private static void renderScrollbar(
             GuiGraphics guiGraphics,
             String channelId,
@@ -101,6 +163,7 @@ public final class ChannelMessageRenderer {
         int trackY2 = bottom;
 
         int trackHeight = trackY2 - trackY1;
+
         if (trackHeight <= 0) {
             return;
         }
@@ -114,6 +177,7 @@ public final class ChannelMessageRenderer {
         int movableHeight = trackHeight - thumbHeight;
 
         int thumbY;
+
         if (maxScroll <= 0) {
             thumbY = trackY1;
         } else {

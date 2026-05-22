@@ -1,72 +1,49 @@
 package com.mickdev.tabchannel.Render.Gui;
 
-
 import com.mickdev.tabchannel.NetWork.CodecChanel.ClientChannelTabState;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ClientChannelChatState;
-import com.mickdev.tabchannel.TabChannel;
+import com.mickdev.tabchannel.Render.Hud.MpButtonRenderer;
+import com.mickdev.tabchannel.Render.Hud.MpHudInteraction;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ScreenEvent;
 
-@EventBusSubscriber(modid = TabChannel.MODID, value = Dist.CLIENT)
 public final class ChannelChatScreenHook {
+    private ChannelChatScreenHook() {}
 
-    private ChannelChatScreenHook() {
+    public static void render(ChatScreen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        ChannelTabRenderer.render(screen, guiGraphics, mouseX, mouseY);
+        ChannelMessageRenderer.render(screen, guiGraphics, mouseX, mouseY);
+
+        Minecraft mc = Minecraft.getInstance();
+        MpButtonRenderer.renderOnChat(guiGraphics, mc, mouseX, mouseY);
     }
 
-    @SubscribeEvent
-    public static void render(ScreenEvent.Render.Post event) {
-        if (event.getScreen() instanceof ChatScreen) {
-            ChannelTabRenderer.render(
-                    event.getScreen(),
-                    event.getGuiGraphics(),
-                    event.getMouseX(),
-                    event.getMouseY()
-            );
-
-            ChannelMessageRenderer.render(
-                    event.getScreen(),
-                    event.getGuiGraphics(),
-                    event.getMouseX(),
-                    event.getMouseY()
-            );
+    public static boolean mouseClicked(ChatScreen screen, double mouseX, double mouseY, int button) {
+        if (MpHudInteraction.handlePopoutClick(mouseX, mouseY, button, Minecraft.getInstance())) {
+            return true;
         }
+
+        if (ChannelMessageRenderer.mouseClicked(screen, mouseX, mouseY, button)) {
+            return true;
+        }
+
+        return ChannelTabRenderer.mouseClicked(screen, mouseX, mouseY, button);
     }
 
-    @SubscribeEvent
-    public static void click(ScreenEvent.MouseButtonPressed.Pre event) {
-        if (event.getScreen() instanceof ChatScreen
-                && ChannelTabRenderer.mouseClicked(
-                event.getScreen(),
-                event.getMouseX(),
-                event.getMouseY(),
-                event.getButton()
-        )) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void mouseScrolled(ScreenEvent.MouseScrolled.Pre event) {
-        if (!(event.getScreen() instanceof ChatScreen)) {
-            return;
-        }
-
+    public static boolean mouseScrolled(ChatScreen screen, double mouseX, double mouseY, double amount) {
         String selectedChannelId = ClientChannelTabState.getSelectedChannelId();
         if (selectedChannelId == null || selectedChannelId.isBlank() || "global".equals(selectedChannelId)) {
-            return;
+            return false;
         }
-
-        int visibleLines = ChannelMessageRenderer.getVisibleLineCount(event.getScreen());
-
-        if (event.getScrollDeltaY() > 0) {
+        int visibleLines = ChannelMessageRenderer.getVisibleLineCount(screen);
+        if (amount > 0) {
             ClientChannelChatState.scrollUp(selectedChannelId, 1, visibleLines);
-            event.setCanceled(true);
-        } else if (event.getScrollDeltaY() < 0) {
+            return true;
+        } else if (amount < 0) {
             ClientChannelChatState.scrollDown(selectedChannelId, 1);
-            event.setCanceled(true);
+            return true;
         }
+        return false;
     }
 }

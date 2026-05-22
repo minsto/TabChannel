@@ -2,34 +2,22 @@ package com.mickdev.tabchannel.Render.Hud;
 
 import com.mickdev.tabchannel.Render.Gui.ChannelUiTheme;
 import com.mickdev.tabchannel.Render.Gui.ClientChannelNotifications;
-import com.mickdev.tabchannel.TabChannel;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
-@EventBusSubscriber(modid = TabChannel.MODID, value = Dist.CLIENT)
 public final class ChannelNotificationHud {
+    private ChannelNotificationHud() {}
 
-    private ChannelNotificationHud() {
+    public static void register() {
+        HudRenderCallback.EVENT.register((guiGraphics, tickCounter) -> render(guiGraphics));
     }
 
-    @SubscribeEvent
-    public static void render(RenderGuiLayerEvent.Post event) {
-        if (!VanillaGuiLayers.HOTBAR.equals(event.getName())) {
-            return;
-        }
-
+    private static void render(GuiGraphics g) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.options.hideGui || !ClientChannelNotifications.hasFreshPing()) {
-            return;
-        }
+        if (mc.player == null || mc.options.hideGui || !ClientChannelNotifications.hasFreshPing()) return;
 
-        GuiGraphics g = event.getGuiGraphics();
         int w = mc.getWindow().getGuiScaledWidth();
         int x = w - 238;
         int y = 28;

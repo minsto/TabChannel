@@ -5,13 +5,14 @@ import com.mickdev.tabchannel.NetWork.CodecChanel.ChannelSelectTabPayload;
 import com.mickdev.tabchannel.NetWork.CodecChanel.ClientChannelTabState;
 import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.ClientChannelChatState;
 import com.mickdev.tabchannel.Render.Gui.ChannelUiTheme;
+import com.mickdev.tabchannel.Render.Hud.MpHudInteraction;
 import com.mickdev.tabchannel.Render.Gui.ClientChannelNotifications;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import java.util.List;
 
 public final class ChannelMainScreen extends Screen {
@@ -55,6 +56,13 @@ public final class ChannelMainScreen extends Screen {
                         b -> minecraft.setScreen(new ChannelPermissionsScreen(this))
                 )
                 .bounds(bx, by + 34, 190, 24)
+                .build());
+
+        addRenderableWidget(Button.builder(
+                        Component.translatable("tabchannel.gui.button.private_messages"),
+                        b -> MpHudInteraction.openMpGui(minecraft)
+                )
+                .bounds(bx, by + 68, 190, 24)
                 .build());
 
         addRenderableWidget(Button.builder(
@@ -232,7 +240,7 @@ public final class ChannelMainScreen extends Screen {
                 ClientChannelTabState.setSelectedChannelId(tab.id());
                 ClientChannelChatState.resetScroll(tab.id());
                 ClientChannelNotifications.clearUnread(tab.id());
-                PacketDistributor.sendToServer(new ChannelSelectTabPayload(tab.id()));
+                ClientPlayNetworking.send(new ChannelSelectTabPayload(tab.id()));
                 return true;
             }
         }

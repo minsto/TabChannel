@@ -10,7 +10,7 @@ import com.mickdev.tabchannel.ChatEntry;
 import com.mickdev.tabchannel.ChatManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public final class ChannelNetworking {
 
@@ -22,7 +22,7 @@ public final class ChannelNetworking {
             return;
         }
 
-        PacketDistributor.sendToPlayer(target, new ChannelMessagePayload(channelId, message));
+        ServerPlayNetworking.send(target, new ChannelMessagePayload(channelId, message));
     }
 
     public static void sendChannelHistory(ServerPlayer target, String channelId) {
@@ -30,13 +30,10 @@ public final class ChannelNetworking {
             return;
         }
 
-        PacketDistributor.sendToPlayer(target, new ChannelClearMessagesPayload(channelId));
+        ServerPlayNetworking.send(target, new ChannelClearMessagesPayload(channelId));
 
         for (ChatEntry entry : ChatManager.get(channelId)) {
-            PacketDistributor.sendToPlayer(
-                    target,
-                    new ChannelMessagePayload(channelId, entry.raw())
-            );
+            ServerPlayNetworking.send(target, new ChannelMessagePayload(channelId, entry.raw()));
         }
     }
 }

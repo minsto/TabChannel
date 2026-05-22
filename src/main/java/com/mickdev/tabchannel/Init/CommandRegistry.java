@@ -1,33 +1,22 @@
 package com.mickdev.tabchannel.Init;
 
 import com.mickdev.tabchannel.Commandes.ChannelCommands;
-import com.mickdev.tabchannel.TabChannel;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
 
-/**
- * Youer (et autres hybrides NeoForge + Bukkit) : enregistrement en
- * {@link EventPriority#LOWEST} pour entrer après les patchs serveur, puis synchro explicite
- * côté Bukkit sur {@link ServerStartingEvent}.
- */
-@EventBusSubscriber(modid = TabChannel.MODID)
 public final class CommandRegistry {
+    private CommandRegistry() {}
 
-    private CommandRegistry() {
+    public static void register() {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+                ChannelCommands.register(dispatcher));
+
+        ServerLifecycleEvents.SERVER_STARTED.register(CommandRegistry::onServerStarted);
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onRegisterCommands(RegisterCommandsEvent event) {
-        ChannelCommands.register(event.getDispatcher());
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onServerStarting(ServerStartingEvent event) {
-        MinecraftServer server = event.getServer();
+    private static void onServerStarted(MinecraftServer server) {
+        HybridBukkitPermissions.registerDefaultsForAllPlayers();
         HybridCommandSupport.syncCommandsAfterRegistration(server);
     }
 }

@@ -81,16 +81,28 @@ public final class ChatManager {
 
     public static void joinChannel(ChatChannel channel, ServerPlayer player, boolean bypass) {
         if (channel == null) {
-            throw new IllegalStateException("Canal introuvable.");
+            throw new IllegalStateException(
+                    Component.translatable("tabchannel.error.channel_not_found")
+                            .getString()
+            );
         }
 
         if (channel.isBanned(player.getUUID()) && !bypass) {
-            throw new IllegalStateException("Tu es banni de ce canal.");
+            throw new IllegalStateException(
+                    Component.translatable("tabchannel.error.you_are_banned")
+                            .getString()
+            );
         }
 
-        if ((channel.getVisibility() == ChannelVisibility.PRIVATE || channel.getVisibility() == ChannelVisibility.FACTION)
-                && !channel.isMember(player.getUUID()) && !bypass) {
-            throw new IllegalStateException("Tu n'as pas accès à ce canal privé.");
+        if ((channel.getVisibility() == ChannelVisibility.PRIVATE
+                || channel.getVisibility() == ChannelVisibility.FACTION)
+                && !channel.isMember(player.getUUID())
+                && !bypass) {
+
+            throw new IllegalStateException(
+                    Component.translatable("tabchannel.error.private_channel_access")
+                            .getString()
+            );
         }
 
         if (!channel.isMember(player.getUUID())) {
@@ -264,6 +276,17 @@ public final class ChatManager {
         for (UUID playerId : PLAYER_STATES.keySet()) {
             rebuildPlayerTabs(playerId);
         }
+    }
+
+    /**
+     * Nouveau monde / redémarrage du serveur intégré : les maps statiques survivent en JVM,
+     * il faut tout remettre à zéro avant de charger le SavedData du monde courant.
+     */
+    public static void resetForNewServer() {
+        CHANNELS.entrySet().removeIf(e -> !e.getValue().isOriginalGlobal());
+        TABS.entrySet().removeIf(e -> !"global".equals(e.getKey()));
+        TABS.computeIfAbsent("global", id -> new ArrayList<>()).clear();
+        PLAYER_STATES.clear();
     }
 
     public static void addLoadedChannel(ChatChannel channel) {

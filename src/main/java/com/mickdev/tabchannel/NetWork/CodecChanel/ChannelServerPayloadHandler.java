@@ -8,18 +8,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public final class ChannelServerPayloadHandler {
 
     private ChannelServerPayloadHandler() {
     }
 
-    public static void handleSelectTab(ChannelSelectTabPayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (!(context.player() instanceof ServerPlayer player)) {
-                return;
-            }
+    public static void handleSelectTab(ChannelSelectTabPayload payload, ServerPlayer player) {
+        if (player == null) {
+            return;
+        }
+        {
 
             String channelId = ChatManager.sanitizeId(payload.channelId());
             ChatChannel channel = ChatManager.getChannel(channelId);
@@ -77,14 +76,14 @@ public final class ChannelServerPayloadHandler {
                     0.7F,
                     1.0F
             );
-        });
+        }
     }
 
-    public static void handleChangePage(ChannelChangePagePayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (!(context.player() instanceof ServerPlayer player)) {
-                return;
-            }
+    public static void handleChangePage(ChannelChangePagePayload payload, ServerPlayer player) {
+        if (player == null) {
+            return;
+        }
+        {
 
             if (payload.next()) {
                 ChatManager.nextPage(player.getUUID());
@@ -102,14 +101,14 @@ public final class ChannelServerPayloadHandler {
                     0.7F,
                     1.0F
             );
-        });
+        }
     }
 
-    public static void handleSendMessage(ChannelSendMessagePayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (!(context.player() instanceof ServerPlayer player)) {
-                return;
-            }
+    public static void handleSendMessage(ChannelSendMessagePayload payload, ServerPlayer player) {
+        if (player == null) {
+            return;
+        }
+        {
 
             String channelId = payload.channelId();
             String message = payload.message();
@@ -124,6 +123,6 @@ public final class ChannelServerPayloadHandler {
             }
 
             ChannelChatService.handleChannelMessage(player, channelId, message);
-        });
+        }
     }
 }

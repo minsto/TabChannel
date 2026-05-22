@@ -1,35 +1,80 @@
 package com.mickdev.tabchannel;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.config.ModConfigEvent;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-// An example config class. This is not required, but it's a good idea to have one to keep your config organized.
-// Demonstrates how to use Neo's config APIs
-public class Config {
-    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+public final class Config {
 
-    public static final ModConfigSpec.IntValue MENTION_STAFF_ADMIN_MAX = BUILDER
-            .comment("Nombre max de mentions @staff / @admin / @mod par joueur dans la fenêtre (anti-spam).")
-            .defineInRange("mentionStaffAdminMax", 3, 1, 3);
+    public static int MENTION_STAFF_ADMIN_MAX = 3;
+    public static int MENTION_STAFF_ADMIN_WINDOW_SECONDS = 60;
+    public static int MENTION_STAFF_ADMIN_COOLDOWN_SECONDS = 30;
 
-    public static final ModConfigSpec.IntValue MENTION_STAFF_ADMIN_WINDOW_SECONDS = BUILDER
-            .comment("Durée en secondes de la fenêtre anti-spam pour les mentions staff/admin.")
-            .defineInRange("mentionStaffAdminWindowSeconds", 60, 10, 3600);
+    private static final Gson GSON = new GsonBuilder()
+            .setPrettyPrinting()
+            .create();
 
-    public static final ModConfigSpec.IntValue MENTION_STAFF_ADMIN_COOLDOWN_SECONDS = BUILDER
-            .comment("Cooldown en secondes après avoir dépassé le quota (les @staff/@admin ne notifient plus pendant ce délai, puis le quota se réinitialise).")
-            .defineInRange("mentionStaffAdminCooldownSeconds", 30, 5, 600);
+    private static final Path CONFIG_PATH = FabricLoader.getInstance()
+            .getConfigDir()
+            .resolve("tabchannel.json");
 
-    static final ModConfigSpec SPEC = BUILDER.build();
+    public int mentionStaffAdminMax = 3;
+    public int mentionStaffAdminWindowSeconds = 60;
+    public int mentionStaffAdminCooldownSeconds = 30;
 
+    public static Config INSTANCE = new Config();
 
+    private Config() {
+    }
+
+    public static void load() {
+        if (!Files.exists(CONFIG_PATH)) {
+            save();
+        }
+
+        try (Reader reader = Files.newBufferedReader(CONFIG_PATH)) {
+            Config loaded = GSON.fromJson(reader, Config.class);
+
+            if (loaded != null) {
+                INSTANCE = loaded;
+                INSTANCE.validate();
+            }
+        } catch (Exception e) {
+            TabChannel.LOGGER.error("Failed to load config.", e);
+            INSTANCE = new Config();
+            save();
+        }
+
+        MENTION_STAFF_ADMIN_MAX = INSTANCE.mentionStaffAdminMax;
+        MENTION_STAFF_ADMIN_WINDOW_SECONDS = INSTANCE.mentionStaffAdminWindowSeconds;
+        MENTION_STAFF_ADMIN_COOLDOWN_SECONDS = INSTANCE.mentionStaffAdminCooldownSeconds;
+    }
+
+    public static void save() {
+        try {
+            Files.createDirectories(CONFIG_PATH.getParent());
+
+            try (Writer writer = Files.newBufferedWriter(CONFIG_PATH)) {
+                GSON.toJson(INSTANCE, writer);
+            }
+        } catch (IOException e) {
+            TabChannel.LOGGER.error("Failed to save config.", e);
+        }
+    }
+
+    private void validate() {
+        mentionStaffAdminMax = clamp(mentionStaffAdminMax, 1, 3);
+        mentionStaffAdminWindowSeconds = clamp(mentionStaffAdminWindowSeconds, 10, 3600);
+        mentionStaffAdminCooldownSeconds = clamp(mentionStaffAdminCooldownSeconds, 5, 600);
+    }
+
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
 }

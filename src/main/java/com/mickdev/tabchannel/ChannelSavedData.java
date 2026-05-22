@@ -17,10 +17,11 @@ public class ChannelSavedData extends SavedData {
 	public static final String DATA_ID = "tabchannel_chat_channels";
 
 	public ChannelSavedData() {
+		ChatManager.resetForNewServer();
 	}
 
 	public static ChannelSavedData load(CompoundTag tag, HolderLookup.Provider provider) {
-		ChatManager.clearAllDynamicChannels();
+		ChatManager.resetForNewServer();
 
 		ListTag channelsList = tag.getList("channels", 10);
 		for (int i = 0; i < channelsList.size(); i++) {
@@ -93,11 +94,13 @@ public class ChannelSavedData extends SavedData {
 	 * ({@code world/data/}{@link #DATA_ID}{@code .dat}), quel que soit le niveau courant du joueur.
 	 */
 	public static ChannelSavedData get(ServerLevel level) {
-		ServerLevel overworld = level.getServer().getLevel(Level.OVERWORLD);
+		ServerLevel overworld = level.getServer().overworld();
+
 		return overworld.getDataStorage().computeIfAbsent(
 				new SavedData.Factory<>(
 						ChannelSavedData::new,
-						ChannelSavedData::load
+						ChannelSavedData::load,
+						null
 				),
 				DATA_ID
 		);

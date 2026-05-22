@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "tabchannel",
+  "version": "${version}",
+  "name": "TabChannel",
+  "description": "Multi-channel chat mod for Fabric.",
+  "authors": ["mick dev"],
+  "license": "MIT",
+  "icon": "assets/tabchannel/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.mickdev.tabchannel.TabChannel"],
+    "client": ["com.mickdev.tabchannel.client.TabChannelClient"]
+  },
+  "mixins": [
+    "tabchannel.mixins.json",
+    "tabchannel.client.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

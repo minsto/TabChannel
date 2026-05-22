@@ -1,10 +1,12 @@
 package com.mickdev.tabchannel;
 
 
+import com.mickdev.tabchannel.Common.Mp.MpAccess;
 import com.mickdev.tabchannel.NetWork.CodecChanel.ChannelAddTabPayload;
 import com.mickdev.tabchannel.NetWork.CodecChanel.ChannelClearTabsPayload;
+import com.mickdev.tabchannel.NetWork.CodecChanel.SOPC2.MpBrowseModePayload;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public final class ChannelSyncService {
 
@@ -17,7 +19,8 @@ public final class ChannelSyncService {
 
         ChatTabState state = ChatManager.getState(player.getUUID());
 
-        PacketDistributor.sendToPlayer(player, new ChannelClearTabsPayload());
+        ServerPlayNetworking.send(player, new ChannelClearTabsPayload());
+        ServerPlayNetworking.send(player, new MpBrowseModePayload(MpAccess.canBrowseAllOnlinePlayers(player)));
 
         for (String id : state.getOpenedTabs()) {
             ChatChannel channel = ChatManager.getChannel(id);
@@ -25,7 +28,7 @@ public final class ChannelSyncService {
                 continue;
             }
 
-            PacketDistributor.sendToPlayer(player, new ChannelAddTabPayload(
+            ServerPlayNetworking.send(player, new ChannelAddTabPayload(
                     channel.getId(),
                     channel.getDisplayName(),
                     channel.isOriginalGlobal(),

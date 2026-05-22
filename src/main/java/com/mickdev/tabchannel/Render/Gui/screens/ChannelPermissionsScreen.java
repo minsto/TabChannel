@@ -79,6 +79,12 @@ public final class ChannelPermissionsScreen extends Screen {
                 )
                 .bounds(panelX + panelW - 134, panelY + panelH - 30, 110, 20)
                 .build());
+        addRenderableWidget(Button.builder(
+                        Component.literal("Remove Permission"),
+                        b -> removePermission()
+                )
+                .bounds(panelX + 24, panelY + 210, 150, 20)
+                .build());
     }
 
     private void addPermissionButton(String text, String perm, int x, int y, int w, int h) {
@@ -89,7 +95,22 @@ public final class ChannelPermissionsScreen extends Screen {
                 .bounds(x, y, w, h)
                 .build());
     }
+    private void removePermission() {
+        String player = playerBox.getValue().trim();
+        String channel = selectedChannel();
 
+        if (player.isBlank() || selectedPermission.isBlank() || channel.isBlank()) {
+            return;
+        }
+
+        if (minecraft != null && minecraft.player != null) {
+            minecraft.player.connection.sendCommand(
+                    "setchannel perm remove " + channel + " " + player + " " + selectedPermission
+            );
+        }
+
+        minecraft.setScreen(parent);
+    }
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         // Pas de blur : monde visible derrière.
@@ -180,7 +201,7 @@ public final class ChannelPermissionsScreen extends Screen {
 
         if (minecraft != null && minecraft.player != null) {
             minecraft.player.connection.sendCommand(
-                    "setchannel invite " + player + " " + channel
+                    "setchannel perm add " + channel + " " + player + " " + selectedPermission
             );
         }
 

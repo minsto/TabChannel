@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 import com.mickdev.tabchannel.Config;
 import net.minecraft.server.MinecraftServer;
 
@@ -33,10 +34,9 @@ public final class ChannelMentionAntiSpam {
 			return StaffMentionResult.ok();
 		}
 
-		int max = Config.MENTION_STAFF_ADMIN_MAX.get();
-		int windowSec = Config.MENTION_STAFF_ADMIN_WINDOW_SECONDS.get();
-		int cooldownSec = Config.MENTION_STAFF_ADMIN_COOLDOWN_SECONDS.get();
-
+		int max = Config.MENTION_STAFF_ADMIN_MAX;
+		int windowSec = Config.MENTION_STAFF_ADMIN_WINDOW_SECONDS;
+		int cooldownSec = Config.MENTION_STAFF_ADMIN_COOLDOWN_SECONDS;
 		if (max <= 0) {
 			return StaffMentionResult.ok();
 		}

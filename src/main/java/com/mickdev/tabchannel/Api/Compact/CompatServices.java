@@ -1,18 +1,18 @@
 package com.mickdev.tabchannel.Api.Compact;
 
-import net.neoforged.fml.ModList;
+import net.fabricmc.loader.api.FabricLoader;
 
 public final class CompatServices {
 
     public static final PermissionCompat PERMISSIONS = createPermissionCompat();
     public static final FactionCompat FACTIONS = createFactionCompat();
-
+    public static final DiscordCompat DISCORD = createDiscordCompat();
     private CompatServices() {
     }
 
     private static PermissionCompat createPermissionCompat() {
         // LuckPerms MOD NeoForge/Forge
-        if (ModList.get().isLoaded("luckperms")) {
+        if (FabricLoader.getInstance().isModLoaded("luckperms")) {
             return new LuckPermsCompat();
         }
 
@@ -30,17 +30,28 @@ public final class CompatServices {
         return new NoPermissionCompat();
     }
 
+
+    private static DiscordCompat createDiscordCompat() {
+        if (BukkitDetector.isBukkitPresent() && BukkitDetector.hasPlugin("DiscordSRV")) {
+            return new BukkitDiscordSrvCompat();
+        }
+
+        return new NoDiscordCompat();
+    }
     private static FactionCompat createFactionCompat() {
         // Mods factions NeoForge
-        if (ModList.get().isLoaded("odyssey_factions_rise")) {
-            return new OdysseyFactionCompat();
-        }
-        if (ModList.get().isLoaded("soleaapi")) {
+      //  if (FabricLoader.getInstance().isModLoaded("odyssey_factions_rise")) {
+        //    return new OdysseyFactionCompat();
+       // }
+        if (FabricLoader.getInstance().isModLoaded("soleaapi")) {
             return new SoleaFactionCompat();
         }
-        if (ModList.get().isLoaded("factionwar")) {
-            return new FactionWarCompat();
+        if (FabricLoader.getInstance().isModLoaded("factions")) {
+            return new FabricIckerFactionCompat();
         }
+        //if (FabricLoader.getInstance().isModLoaded("factionwar")) {
+          //  return new FactionWarCompat();
+        //}
 
         // Plugins factions Bukkit/Mohist
         if (BukkitDetector.isBukkitPresent()) {

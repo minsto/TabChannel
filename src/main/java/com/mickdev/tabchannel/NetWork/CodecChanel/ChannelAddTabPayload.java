@@ -1,7 +1,7 @@
 package com.mickdev.tabchannel.NetWork.CodecChanel;
 
 import com.mickdev.tabchannel.TabChannel;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -20,10 +20,10 @@ public record ChannelAddTabPayload(
     public static final Type<ChannelAddTabPayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(TabChannel.MODID, "channel_add_tab"));
 
-    public static final StreamCodec<ByteBuf, ChannelAddTabPayload> STREAM_CODEC =
+    public static final StreamCodec<RegistryFriendlyByteBuf, ChannelAddTabPayload> STREAM_CODEC =
             new StreamCodec<>() {
                 @Override
-                public ChannelAddTabPayload decode(ByteBuf buf) {
+                public ChannelAddTabPayload decode(RegistryFriendlyByteBuf buf) {
                     String id = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String displayName = ByteBufCodecs.STRING_UTF8.decode(buf);
                     boolean global = ByteBufCodecs.BOOL.decode(buf);
@@ -44,7 +44,7 @@ public record ChannelAddTabPayload(
                 }
 
                 @Override
-                public void encode(ByteBuf buf, ChannelAddTabPayload payload) {
+                public void encode(RegistryFriendlyByteBuf buf, ChannelAddTabPayload payload) {
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.id());
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.displayName());
                     ByteBufCodecs.BOOL.encode(buf, payload.global());
