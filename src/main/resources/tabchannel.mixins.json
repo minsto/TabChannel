@@ -3,8 +3,7 @@
   "package": "com.mickdev.tabchannel.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ServerPlayerSystemMessageMixin",
-
+    "ServerPlayerSystemMessageMixin"
   ],
   "injectors": {
     "defaultRequire": 1

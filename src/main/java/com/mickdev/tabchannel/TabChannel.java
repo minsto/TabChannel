@@ -8,7 +8,6 @@ import com.mickdev.tabchannel.NetWork.ModPayloads;
 import com.mickdev.tabchannel.WindosConf.ChannelClientCommands;
 import com.mickdev.tabchannel.WindosConf.ChannelHudLayoutConfig;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +30,7 @@ import org.slf4j.LoggerFactory;
                     FabricLoader.getInstance().getConfigDir()
             );
 
-            ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-                ChannelHudLayoutConfig.ensureDefaultPosition();
-            });
+
 
             FabricChatSearch.register();
             ChannelCommands.register();

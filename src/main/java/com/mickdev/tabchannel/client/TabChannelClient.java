@@ -39,6 +39,7 @@ public final class TabChannelClient implements ClientModInitializer {
         StreamChatManager.bootstrap();
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            ChannelHudLayoutConfig.ensureDefaultPosition();
             ClientMpPersistence.loadForCurrentServer();
             StreamOverlayLayoutConfig.ensureDefaultPosition();
             StreamChatManager.bootstrap();
